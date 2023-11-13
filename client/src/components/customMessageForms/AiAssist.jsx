@@ -17,7 +17,8 @@ function useDebounce(value, delay) {
 const AiAssist = ({ props, activeChat }) => {
   const [message, setMessage] = useState('');
   const [attachment, setAttachment] = useState('');
-  const [triggerAssist] = usePostAiAssistMutation(); //
+  const [triggerAssist, resultAssist] = usePostAiAssistMutation(); //
+  const [appendText, setAppendText] = useState('');
 
   const handleChange = (e) => {
     setMessage(e.target.value);
@@ -44,14 +45,32 @@ const AiAssist = ({ props, activeChat }) => {
 
   useEffect(() => {
     if (debouncedValue) {
+      const form = { text: message };
+
+      triggerAssist(form);
     }
-  });
+  }, [debouncedValue]); // eslint-disable-line
+  const handleKeyDown = (e) => {
+    //handle enter and tab
+    if (e.keyCode === 9 || e.keyCode === 13) {
+      e.preventDefault();
+      setMessage(`${message} ${appendText}`);
+    }
+    setAppendText('');
+  };
+  useEffect(() => {
+    if (resultAssist.data?.text) {
+      setAppendText();
+    }
+  }, [resultAssist]); //eslint-disable-line
   return (
     <MessageFormUI
       setAttachment={setAttachment}
       message={message}
       handleChange={handleChange}
       handleSubmit={handleSubmit}
+      appendText={appendText}
+      handleKeyDown={handleKeyDown}
     />
   );
 };
